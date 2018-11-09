@@ -12,8 +12,10 @@
         templateUrl:'list.html',
         scope:{
           items:'<',
-          onRemove:'&'
+          onRemove:'&',
+          EmptyValue:'@'
         },
+        transclude:true,
         controller: ShoppingListDirectiveController,
     controllerAs: 'list',
     bindToController: true
@@ -21,31 +23,39 @@
      return ddo;
  }
  function ShoppingListDirectiveController() {
-    var list = this;
-  
-    list.cookiesInList = function () {
-      for (var i = 0; i < list.items.length; i++) {
-        var name = list.items[i].name;
-        if (name.toLowerCase().indexOf("cookie") !== -1) {
-          return true;
-        }
-      }
-  
-      return false;
-    };
-  }
+       var list=this; 
+}
  NarrowItDownController.$inject=['MenuSearchService'];
  function NarrowItDownController(MenuSearchService){
      var narrow=this;
-// var promise=MenuSearchService.getMatchedMenuItems(narrow);
-        narrow.searchItem="";
+     narrow.EmptyValue=false;
+     narrow.updateValue=function(){
+         narrow.found="";
+         narrow.EmptyValue="";
+     };
+   narrow.found="";
+   narrow.searchItem="";
      narrow.getList=function(){
-        MenuSearchService.getMatchedMenuItems(narrow.searchItem);
-    narrow.found=MenuSearchService.getListItem();
+         if(narrow.searchItem!=""){
+             var promise=MenuSearchService.getMatchedMenuItems(narrow.searchItem);
+                promise.then(function(response){
+                if(response.length>0){
+                    narrow.found=response;}
+                    else{
+                        narrow.EmptyValue="Nothing Found.";
+                    }
+                }).catch(function(error){
+                    narrow.EmptyValue="Error while getting the data please try again";
+                });
+            } 
+else {
+    narrow.EmptyValue="Nothing Found.";
+}
+};
     narrow.removeItem=function(index){
         MenuSearchService.removeItem(index);
     }
-}
+
  }
 
  MenuSearchService.$inject=['$http','ApiBasePath'];
@@ -56,8 +66,8 @@
 
      service.getMatchedMenuItems=
      function(searchItem){
-         console.log(searchItem);
-         var response=$http({
+         selecteditems=[];
+         return $http({
            method:'get',
            url: (ApiBasePath+'/menu_items.json')
          })
@@ -69,15 +79,12 @@
                
                 var value=(obj.menu_items[i].description);
               
-                if(value.indexOf(searchItem)!==-1){
-                    var sname=obj.menu_items[i].short_name;
-                    var name=obj.menu_items[i].name;    
+                if(value.indexOf(searchItem)!==-1){  
                     var selectedItem={
-                        short_name:sname,
-                        name:name
+                        short_name:obj.menu_items[i].short_name,
+                        name:obj.menu_items[i].name,
+                        description:obj.menu_items[i].description
                     };
-                    console.log(selectedItem
-                        );
                     selecteditems.push(selectedItem);
                 }
                 }
@@ -87,12 +94,11 @@
          }).catch(function(error){
              console.log("Error",error);
          } );
-    service.getListItem=function(){
-        return selecteditems;
-    }
+        
+        };
     service.removeItem=function(index){
         selecteditems.splice(index,1);
     }
- }
+ 
  }
 })();
