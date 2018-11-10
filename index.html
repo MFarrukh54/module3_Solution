@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="styles/styles.css">
     <script src="angular.min.js"></script>
     <script src="app.js"></script>
+    <style>
+      .message { font-size: 1.3em; font-weight: bold; }
+    </style>
   </head>
 <body>
    <div class="container" ng-controller="NarrowItDownController as narrow">
@@ -17,9 +20,10 @@
     <div class="form-group narrow-button">
       <button class="btn btn-primary" ng-click="narrow.getList()">Narrow It Down For Me!</button>
     </div>
+    <div class="form-group narrow-button">
     <found-items items="narrow.found" on-remove='narrow.removeItem(index)'></found-items>
-    <br>
-    <div class=" error" ng-if="narrow.EmptyValue">{{narrow.EmptyValue}}</div>
+  </div>
+    <div class="form-group message narrow-button error" ng-if="narrow.EmptyValue">{{narrow.EmptyValue}}</div>
   </div>
 
 </body>
